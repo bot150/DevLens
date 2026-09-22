@@ -1,3 +1,4 @@
+
 import { useState } from "react"
 
 import GradientMenu, {
@@ -5,6 +6,7 @@ import GradientMenu, {
 } from "./components/ui/gradient-menu"
 
 import DevLens from "./components/DevLens"
+import LiveReview from "./components/LiveReview"
 
 import {
   scanCode,
@@ -12,10 +14,6 @@ import {
   type CodeIssue,
 } from "./analysis/scanner"
 
-
-/* =========================================================
-   DEFAULT SAMPLE
-========================================================= */
 
 const sampleCode = `def get_user(user_id):
     user = db.get(user_id)
@@ -30,23 +28,9 @@ result = get_user(42)
 print(result["email"])`
 
 
-/* =========================================================
-   APP
-========================================================= */
-
 function App() {
-
-  /* =======================================================
-     SCREEN
-  ======================================================= */
-
   const [screen, setScreen] =
     useState<PairCheckScreen>("home")
-
-
-  /* =======================================================
-     CODE STATE
-  ======================================================= */
 
   const [language, setLanguage] =
     useState("Python")
@@ -54,29 +38,11 @@ function App() {
   const [code, setCode] =
     useState(sampleCode)
 
-
-  /* =======================================================
-     ANALYSIS STATE
-  ======================================================= */
-
   const [analysis, setAnalysis] =
     useState<AnalysisResult | null>(null)
 
   const [selectedIssue, setSelectedIssue] =
     useState<CodeIssue | null>(null)
-
-
-  /* =======================================================
-     FIX STATE
-
-     `correctedCode` is kept separately from `code`.
-
-     This is important because after scanning the fixed
-     code, the scanner may return zero issues and therefore
-     there may no longer be a selected issue.
-
-     We still want to display the corrected code.
-  ======================================================= */
 
   const [correctedCode, setCorrectedCode] =
     useState<string | null>(null)
@@ -88,9 +54,9 @@ function App() {
     useState(false)
 
 
-  /* =======================================================
+  /* =========================================================
      NAVIGATION
-  ======================================================= */
+  ========================================================= */
 
   const navigate = (
     nextScreen: PairCheckScreen
@@ -99,52 +65,33 @@ function App() {
   }
 
 
-  /* =======================================================
-     HOME
-  ======================================================= */
-
   const goHome = () => {
-
     setScreen("home")
-
   }
 
 
-  /* =======================================================
-     RESET ANALYSIS
-  ======================================================= */
+  /* =========================================================
+     RESET
+  ========================================================= */
 
   const resetAnalysisState = () => {
-
     setAnalysis(null)
-
     setSelectedIssue(null)
-
     setCorrectedCode(null)
-
     setFixed(false)
-
     setFixVerified(false)
-
   }
 
 
-  /* =======================================================
-     DEV LENS
-  ======================================================= */
-
-
-
-  /* =======================================================
-     ANALYSIS RESULT FROM LIVE REVIEW
-  ======================================================= */
+  /* =========================================================
+     ANALYSIS RESULT
+  ========================================================= */
 
   const handleAnalysis = (
     result: AnalysisResult,
     reviewedCode: string,
     reviewedLanguage: string
   ) => {
-
     setAnalysis(result)
 
     setCode(reviewedCode)
@@ -162,35 +109,20 @@ function App() {
     setFixVerified(false)
 
     setScreen("analysis")
-
   }
 
 
-  /* =======================================================
+  /* =========================================================
      APPLY FIX
-  ======================================================= */
+  ========================================================= */
 
   const applyFix = () => {
-
-    /*
-      No generated/predefined fix here.
-
-      The scanner must provide `fixedCode`
-      for the exact issue found in the user's code.
-    */
-
     if (!selectedIssue?.fixedCode) {
       return
     }
 
-
     const newCode =
       selectedIssue.fixedCode
-
-
-    /* -----------------------------------------------
-       SAVE CORRECTED CODE
-    ------------------------------------------------ */
 
     setCorrectedCode(newCode)
 
@@ -198,75 +130,41 @@ function App() {
 
     setFixed(true)
 
-
-    /* -----------------------------------------------
-       RE-SCAN THE CORRECTED CODE
-    ------------------------------------------------ */
-
     const verifiedResult =
       scanCode(
         newCode,
         language
       )
 
-
     setAnalysis(
       verifiedResult
     )
 
-
-    /*
-      IMPORTANT:
-
-      Do NOT replace selectedIssue with the first issue
-      from the verified scan.
-
-      We want to continue showing the issue that was
-      actually fixed while displaying the corrected code.
-    */
-
     setFixVerified(
       verifiedResult.issues.length === 0
     )
-
-
-    /*
-      If other issues remain, keep the original issue
-      visible but the analysis object contains the
-      remaining scanner results.
-    */
-
   }
 
 
-  /* =======================================================
+  /* =========================================================
      BACK TO REVIEW
-  ======================================================= */
+  ========================================================= */
 
   const backToReview = () => {
-
     setScreen("review")
-
   }
 
 
-  /* =======================================================
-     RENDER
-  ======================================================= */
-
   return (
-
     <div className="min-h-screen bg-[#F7F1E8] text-[#24171B]">
 
-
-      {/* =================================================
+      {/* =====================================================
           TOP APP BAR
-      ================================================= */}
+      ===================================================== */}
 
       <header className="sticky top-0 z-40 border-b border-[#DCCFC5] bg-[#F7F1E8]/95 backdrop-blur-xl">
 
         <div className="mx-auto flex h-[68px] max-w-6xl items-center justify-between px-5">
-
 
           {/* BRAND */}
 
@@ -274,20 +172,13 @@ function App() {
             onClick={goHome}
             className="group flex items-center gap-3"
           >
-
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#7A1F3D] text-lg font-bold text-white shadow-sm transition group-hover:bg-[#651832]">
-
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#7A1F3D] text-lg font-bold text-white shadow-sm">
               P
-
             </div>
-
 
             <div className="text-lg font-semibold tracking-tight">
-
               PairCheck
-
             </div>
-
           </button>
 
 
@@ -308,9 +199,9 @@ function App() {
       </header>
 
 
-      {/* =================================================
+      {/* =====================================================
           HOME
-      ================================================= */}
+      ===================================================== */}
 
       {screen === "home" && (
 
@@ -320,10 +211,9 @@ function App() {
 
             <div className="w-full py-10 sm:py-16">
 
-
               {/* BADGE */}
 
-              <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-[#B98295]/40 bg-[#7A1F3D]/5 px-4 py-2 text-xs text-[#7A1F3D] sm:mb-8 sm:text-sm">
+              <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-[#B98295]/40 bg-[#7A1F3D]/5 px-4 py-2 text-xs text-[#7A1F3D]">
 
                 <span className="h-2 w-2 rounded-full bg-[#7A1F3D]" />
 
@@ -373,9 +263,7 @@ function App() {
                   }
                   className="rounded-xl bg-[#7A1F3D] px-6 py-3.5 font-semibold text-white shadow-sm transition hover:bg-[#651832]"
                 >
-
                   Open DevLens
-
                 </button>
 
 
@@ -385,9 +273,7 @@ function App() {
                   }
                   className="rounded-xl border border-[#CFC1B7] bg-white/70 px-6 py-3.5 font-semibold transition hover:bg-white"
                 >
-
                   Review Code
-
                 </button>
 
               </div>
@@ -401,24 +287,43 @@ function App() {
       )}
 
 
-      {/* =================================================
+      {/* =====================================================
           DEV LENS
-      ================================================= */}
+      ===================================================== */}
 
       {screen === "devlens" && (
-  <DevLens
-    onBack={goHome}
-    onAnalysis={handleAnalysis}
-  />
-)}
-      {/* =================================================
+
+        <DevLens
+          onBack={goHome}
+          onAnalysis={handleAnalysis}
+        />
+
+      )}
+
+
+      {/* =====================================================
+          REVIEW CODE
+      ===================================================== */}
+
+      {screen === "review" && (
+
+        <LiveReview
+          initialCode={code}
+          initialLanguage={language}
+          onBack={goHome}
+          onAnalysis={handleAnalysis}
+        />
+
+      )}
+
+
+      {/* =====================================================
           ANALYSIS
-      ================================================= */}
+      ===================================================== */}
 
       {screen === "analysis" && (
 
         <main className="mx-auto max-w-md px-5 pb-36 pt-5">
-
 
           {/* HEADER */}
 
@@ -472,18 +377,14 @@ function App() {
                     fixVerified
                       ? "bg-green-100 text-green-700"
                       : fixed
-                        ? "bg-amber-100 text-amber-700"
-                        : "bg-[#F9DDE2] text-[#A31D39]"
+                      ? "bg-amber-100 text-amber-700"
+                      : "bg-[#F9DDE2] text-[#A31D39]"
                   }
                 `}
               >
-
                 {fixVerified
                   ? "✓"
-                  : fixed
-                    ? "!"
-                    : "!"}
-
+                  : "!"}
               </span>
 
 
@@ -492,8 +393,8 @@ function App() {
                 {fixVerified
                   ? "FIX VERIFIED"
                   : fixed
-                    ? "FIX APPLIED"
-                    : "ISSUE DETECTED"}
+                  ? "FIX APPLIED"
+                  : "ISSUE DETECTED"}
 
               </span>
 
@@ -505,8 +406,8 @@ function App() {
               {fixVerified
                 ? "Your code is fixed."
                 : fixed
-                  ? "Fix applied."
-                  : "We found a problem."}
+                ? "Fix applied."
+                : "We found a problem."}
 
             </h2>
 
@@ -516,8 +417,8 @@ function App() {
               {fixVerified
                 ? "PairCheck fixed the issue and verified the corrected code."
                 : fixed
-                  ? "The corrected code is shown below. PairCheck found other issues that may still need attention."
-                  : "PairCheck found an issue in the code you submitted."}
+                ? "The corrected code is shown below. PairCheck found other issues that may still need attention."
+                : "PairCheck found an issue in the code you submitted."}
 
             </p>
 
@@ -563,14 +464,13 @@ function App() {
           </div>
 
 
-          {/* =================================================
+          {/* ===================================================
               ORIGINAL ISSUE
-          ================================================= */}
+          =================================================== */}
 
           {selectedIssue && !fixed && (
 
             <div className="mt-4 overflow-hidden rounded-[20px] border border-[#E3C2C8] bg-white shadow-sm">
-
 
               {/* ISSUE HEADER */}
 
@@ -651,7 +551,7 @@ function App() {
                 <button
                   onClick={applyFix}
                   disabled={!selectedIssue.fixedCode}
-                  className="mt-4 flex w-full items-center justify-center gap-2 rounded-[14px] bg-[#7A1F3D] py-3.5 text-xs font-bold text-white shadow-[0_6px_18px_rgba(122,31,61,0.2)] transition hover:bg-[#651832] disabled:cursor-not-allowed disabled:opacity-50"
+                  className="mt-4 flex w-full items-center justify-center gap-2 rounded-[14px] bg-[#7A1F3D] py-3.5 text-xs font-bold text-white shadow-sm transition hover:bg-[#651832] disabled:cursor-not-allowed disabled:opacity-50"
                 >
 
                   {selectedIssue.fixedCode
@@ -671,14 +571,13 @@ function App() {
           )}
 
 
-          {/* =================================================
+          {/* ===================================================
               ORIGINAL CODE
-          ================================================= */}
+          =================================================== */}
 
           {selectedIssue && !fixed && (
 
             <div className="mt-4 overflow-hidden rounded-[20px] border border-[#4A1025] bg-[#21191C]">
-
 
               <div className="flex items-center justify-between border-b border-white/10 bg-[#2A2023] px-4 py-3">
 
@@ -704,15 +603,15 @@ function App() {
 
               <div className="max-h-[300px] overflow-auto">
 
-                {code.split("\n").map(
-                  (line, index) => {
+                {code
+                  .split("\n")
+                  .map((line, index) => {
 
                     const lineNumber =
                       index + 1
 
                     const isProblemLine =
                       lineNumber === selectedIssue.line
-
 
                     return (
 
@@ -729,9 +628,7 @@ function App() {
                       >
 
                         <span className="w-9 shrink-0 select-none border-r border-white/5 bg-[#181214] px-2 py-1 text-right font-mono text-[9px] text-[#71666A]">
-
                           {lineNumber}
-
                         </span>
 
 
@@ -745,17 +642,13 @@ function App() {
                             }
                           `}
                         >
-
                           {line || " "}
-
                         </code>
 
                       </div>
 
                     )
-
-                  }
-                )}
+                  })}
 
               </div>
 
@@ -764,16 +657,15 @@ function App() {
           )}
 
 
-          {/* =================================================
+          {/* ===================================================
               CORRECTED CODE
-          ================================================= */}
+          =================================================== */}
 
           {fixed && correctedCode && (
 
             <div className="mt-5">
 
-
-              {/* SUCCESS / FIX STATUS */}
+              {/* STATUS */}
 
               <div
                 className={`
@@ -788,8 +680,7 @@ function App() {
 
                 <div
                   className={`
-                    flex h-9 w-9 shrink-0 items-center justify-center
-                    rounded-full
+                    flex h-9 w-9 shrink-0 items-center justify-center rounded-full
                     ${
                       fixVerified
                         ? "bg-green-100 text-green-700"
@@ -797,11 +688,9 @@ function App() {
                     }
                   `}
                 >
-
                   {fixVerified
                     ? "✓"
                     : "!"}
-
                 </div>
 
 
@@ -817,11 +706,9 @@ function App() {
                       }
                     `}
                   >
-
                     {fixVerified
                       ? "Fix verified"
                       : "Fix applied"}
-
                   </p>
 
 
@@ -835,11 +722,9 @@ function App() {
                       }
                     `}
                   >
-
                     {fixVerified
                       ? "PairCheck re-scanned the corrected code and found no remaining issues."
                       : "The corrected code is shown below. The scanner found additional issues."}
-
                   </p>
 
                 </div>
@@ -847,14 +732,9 @@ function App() {
               </div>
 
 
-              {/* =================================================
-                  CORRECTED CODE CARD
-              ================================================= */}
+              {/* CORRECTED CODE */}
 
-              <div className="overflow-hidden rounded-[20px] border border-green-300 bg-[#21191C] shadow-[0_12px_30px_rgba(22,163,74,0.10)]">
-
-
-                {/* CODE HEADER */}
+              <div className="overflow-hidden rounded-[20px] border border-green-300 bg-[#21191C] shadow-sm">
 
                 <div className="flex items-center justify-between border-b border-white/10 bg-[#2A2023] px-4 py-3">
 
@@ -885,73 +765,59 @@ function App() {
                       }
                     `}
                   >
-
                     {fixVerified
                       ? "VERIFIED"
                       : "APPLIED"}
-
                   </span>
 
                 </div>
 
 
-                {/* CODE */}
-
                 <div className="max-h-[380px] overflow-auto">
 
                   {correctedCode
                     .split("\n")
-                    .map(
-                      (line, index) => {
+                    .map((line, index) => {
 
-                        const lineNumber =
-                          index + 1
+                      const lineNumber =
+                        index + 1
+
+                      return (
+
+                        <div
+                          key={index}
+                          className="flex min-w-max"
+                        >
+
+                          <span className="w-9 shrink-0 select-none border-r border-white/5 bg-[#181214] px-2 py-1 text-right font-mono text-[9px] text-[#71666A]">
+                            {lineNumber}
+                          </span>
 
 
-                        return (
-
-                          <div
-                            key={index}
-                            className="flex min-w-max"
+                          <code
+                            className={`
+                              px-3 py-1 font-mono text-[10px] leading-5
+                              ${
+                                lineNumber === selectedIssue?.line
+                                  ? "font-bold text-green-200"
+                                  : "text-[#E8DEE1]"
+                              }
+                            `}
                           >
+                            {line || " "}
+                          </code>
 
-                            <span className="w-9 shrink-0 select-none border-r border-white/5 bg-[#181214] px-2 py-1 text-right font-mono text-[9px] text-[#71666A]">
+                        </div>
 
-                              {lineNumber}
-
-                            </span>
-
-
-                            <code
-                              className={`
-                                px-3 py-1 font-mono text-[10px] leading-5
-                                ${
-                                  lineNumber === selectedIssue?.line
-                                    ? "font-bold text-green-200"
-                                    : "text-[#E8DEE1]"
-                                }
-                              `}
-                            >
-
-                              {line || " "}
-
-                            </code>
-
-                          </div>
-
-                        )
-
-                      }
-                    )}
+                      )
+                    })}
 
                 </div>
 
               </div>
 
 
-              {/* =================================================
-                  REMAINING ISSUES
-              ================================================= */}
+              {/* REMAINING ISSUES */}
 
               {analysis &&
                 analysis.issues.length > 0 && (
@@ -966,9 +832,7 @@ function App() {
 
 
                       <span className="rounded-full bg-[#F9DDE2] px-2 py-1 text-[8px] font-bold text-[#A31D39]">
-
                         {analysis.issues.length}
-
                       </span>
 
                     </div>
@@ -980,7 +844,7 @@ function App() {
                         (issue, index) => (
 
                           <div
-                            key={`${issue.line}-${index}`}
+                            key={`${issue.id}-${index}`}
                             className="rounded-[12px] bg-[#FFF7F8] p-3"
                           >
 
@@ -993,20 +857,16 @@ function App() {
                                 </p>
 
                                 <p className="mt-1 text-[9px] text-[#8B7D82]">
-
                                   Line {issue.line}
                                   {" • "}
                                   {issue.category}
-
                                 </p>
 
                               </div>
 
 
                               <span className="rounded-full bg-[#F9DDE2] px-2 py-1 text-[7px] font-bold uppercase text-[#A31D39]">
-
                                 {issue.severity}
-
                               </span>
 
                             </div>
@@ -1023,9 +883,7 @@ function App() {
                 )}
 
 
-              {/* =================================================
-                  VERIFICATION
-              ================================================= */}
+              {/* VERIFICATION */}
 
               <div className="mt-4 rounded-[20px] border border-[#DCCFC5] bg-white p-4">
 
@@ -1041,24 +899,20 @@ function App() {
                     done
                   />
 
-
                   <VerificationRow
                     label="Fix generated from your code"
                     done
                   />
-
 
                   <VerificationRow
                     label="Corrected code applied"
                     done
                   />
 
-
                   <VerificationRow
                     label="Code re-scanned"
                     done
                   />
-
 
                   <VerificationRow
                     label="Issue resolved"
@@ -1074,9 +928,9 @@ function App() {
           )}
 
 
-          {/* =================================================
+          {/* ===================================================
               NO ISSUES
-          ================================================= */}
+          =================================================== */}
 
           {!selectedIssue &&
             !fixed && (
@@ -1109,9 +963,7 @@ function App() {
             )}
 
 
-          {/* =================================================
-              CONTINUE
-          ================================================= */}
+          {/* CONTINUE */}
 
           <button
             onClick={() => {
@@ -1120,9 +972,7 @@ function App() {
             }}
             className="mt-5 w-full rounded-[14px] border border-[#DCCFC5] bg-white py-3.5 text-xs font-semibold text-[#4E4246] transition hover:bg-[#FFFDF9]"
           >
-
             Continue Reviewing
-
           </button>
 
         </main>
@@ -1130,9 +980,9 @@ function App() {
       )}
 
 
-      {/* =================================================
+      {/* =====================================================
           BOTTOM NAVIGATION
-      ================================================= */}
+      ===================================================== */}
 
       <GradientMenu
         activeScreen={screen}
@@ -1141,7 +991,6 @@ function App() {
       />
 
     </div>
-
   )
 }
 
@@ -1166,7 +1015,6 @@ function VerificationRow({
         className={`
           flex h-6 w-6 shrink-0 items-center justify-center
           rounded-full text-[10px] font-bold
-
           ${
             done
               ? "bg-green-100 text-green-700"
@@ -1174,11 +1022,9 @@ function VerificationRow({
           }
         `}
       >
-
         {done
           ? "✓"
           : "○"}
-
       </div>
 
 
@@ -1189,9 +1035,7 @@ function VerificationRow({
             : "text-[11px] text-[#8B7D82]"
         }
       >
-
         {label}
-
       </span>
 
     </div>
